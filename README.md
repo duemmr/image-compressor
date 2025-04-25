@@ -16,7 +16,7 @@ This is a simple image compressor web application built using **F#** and **Giraf
 ## Technologies
 
 - **F#**
-- **Giraffe** (F# web framework)
+- **Giraffe**
 - **ASP.NET Core**
 - **Tailwind CSS** for responsive design
 - **System.Drawing.Common** for image processing
