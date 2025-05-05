@@ -25,10 +25,6 @@ https://github.com/user-attachments/assets/1619f6b5-d0ea-4303-a4be-4365feba6b91
 ## Metadata pop-up
 ![metadata](https://github.com/user-attachments/assets/a7398bc5-8513-4d21-90be-f49fb3edb556)
 
-
-<img src="https://i.gyazo.com/3b568cfed2f52f547e48436e84ed3dc2.mp4" alt="Main feature" />
-
-
 ## Technologies
 
 - **F#**
