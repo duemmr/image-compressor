@@ -14,15 +14,15 @@ This is a simple image compressor web application built in **F#**, using **Giraf
   - Image metadata included
   - Download the output image
 
-### Features preview
+## Features preview
 
-## Home page
+# Home page
 https://github.com/user-attachments/assets/12cee655-82da-48c7-b261-7f4378ae0a4f
 
-## Result page
+# Result page
 https://github.com/user-attachments/assets/1619f6b5-d0ea-4303-a4be-4365feba6b91
 
-## Metadata pop-up
+# Metadata pop-up
 ![metadata](https://github.com/user-attachments/assets/a7398bc5-8513-4d21-90be-f49fb3edb556)
 
 ## Technologies
@@ -30,8 +30,8 @@ https://github.com/user-attachments/assets/1619f6b5-d0ea-4303-a4be-4365feba6b91
 - **F#**
 - **Giraffe**
 - **ASP.NET Core**
-- **Tailwind CSS** for responsive design
-- **System.Drawing.Common** for image processing
+- **Tailwind CSS**
+- **System.Drawing.Common** 
 
 ## Setup
 
