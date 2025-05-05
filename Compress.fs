@@ -28,7 +28,7 @@ module Compress =
         let image = loadImageFromFormFile file
         let outputPath = getOutputPath file "jpg"
 
-        image.Mutate(fun ctx -> ctx.Resize(image.Width / 2, image.Height / 2) |> ignore)
+       // image.Mutate(fun ctx -> ctx.Resize(image.Width / 2, image.Height / 2) |> ignore)
 
         use outStream = File.OpenWrite(outputPath)
         let encoder = JpegEncoder(Quality = quality)
