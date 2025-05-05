@@ -16,6 +16,7 @@ module Views =
         html [] [
             head [] [
                 title [] [ str "IC | Home" ]
+                link [ _rel "icon"; _type "image/x-icon"; _href "/favicon.ico" ]
                 script [
                     _src "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.5"
                 ] []
@@ -303,10 +304,11 @@ module Views =
     let resultView (beforeUrl: string) (afterUrl: string) =
         html [] [
             head [] [
+                title [] [ str "IC | Results" ]
+                link [ _rel "icon"; _type "image/x-icon"; _href "/favicon.ico" ]
                 script [
                     _src "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.5"
                 ] []
-                title [] [ str "IC | Your results" ]
                 style [] [
                     rawText """
                     body {
