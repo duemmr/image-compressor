@@ -17,197 +17,7 @@ module Views =
             head [] [
                 title [] [ str "IC | Home" ]
                 link [ _rel "icon"; _type "image/x-icon"; _href "/favicon.ico" ]
-                script [
-                    _src "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.5"
-                ] []
-            ]
-            script [] [
-                rawText """
-                document.addEventListener('DOMContentLoaded', () => {
-                    const sliderValue       = document.getElementById('sliderValue');
-                    const fileInput         = document.getElementById('compressInput');
-                    const compressBtn       = document.getElementById('compressBtn');
-                    const sliderMode        = document.getElementById('modeQuality');
-                    const sizeMode          = document.getElementById('modeSize');
-                    const qualityBlock      = document.getElementById('qualityBlock');
-                    const targetBlock       = document.getElementById('targetBlock');
-                    const qualityToggle     = document.getElementById('enableQuality');
-                    const resizeToggle      = document.getElementById('enableResize');
-                    const compressionSlider = document.getElementById('compressionSlider');
-                    const keepAspectRatio   = document.getElementById('keepAspect')
-                    const dropZone          = document.getElementById('drop-zone');
-                    const methodSelect      = document.getElementById('methodSelect');
-                    const widthInput        = document.getElementById('width');
-                    const heightInput       = document.getElementById('height');
-                    const form              = document.getElementById('form');
-
-                    let width = 0;
-                    let height = 0;
-                    let aspectRatio = 0;
-                    let hasUploaded = false;
-                    compressBtn.disabled = true;
-
-                    function updateHeight() {
-                        if (!keepAspect.checked || !keepAspectRatio.checked) return;
-
-                        const width = parseInt(widthInput.value);
-                        if (!isNaN(width)) heightInput.value = Math.round(width / aspectRatio);
-                    };
-
-                    keepAspectRatio.addEventListener('change', () => {
-                        heightInput.disabled = keepAspect.checked;
-                        if (keepAspect.checked) updateHeight();
-                    });
-
-                    widthInput.addEventListener('input', () => {
-                        if (keepAspect.checked) updateHeight();
-                    });
-
-                    ['dragenter', 'dragover'].forEach(eventName => {
-                        dropZone.addEventListener(eventName, e => {
-                            e.preventDefault();
-                            dropZone.classList.add('bg-blue-100');
-                        });
-                    });
-
-                    ['dragleave', 'drop'].forEach(eventName => {
-                        dropZone.addEventListener(eventName, e => {
-                            e.preventDefault();
-                            dropZone.classList.remove('bg-blue-100');
-                        });
-                    });
-
-                    function buttonEnable() {
-                        compressBtn.disabled = false;
-                        compressBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    };
-
-                    function buttonDisable() {
-                        compressBtn.disabled = true;
-                        compressBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                    };
-
-                    compressBtn.addEventListener('click', () => form.submit());
-
-                    dropZone.addEventListener('drop', e => {
-                        const files = e.dataTransfer.files;
-                        hasUploaded = files.length;
-
-                        if (!files.length || (!resizeToggle.checked && !qualityToggle.checked)) return;
-
-                        fileInput.files = files;
-
-                        buttonEnable();
-
-                        const formData = new FormData();
-                        formData.append("file", files[0]);
-                        formData.append("method", methodSelect.value);
-
-                        if (compressionSlider) formData.append("quality", compressionSlider.value);
-                    });
-
-                    dropZone.addEventListener('click', () => fileInput.click());
-
-                    fileInput.addEventListener('change', e => {
-                        hasUploaded = e.target.files.length;
-                        compressBtn.disabled = !(e.target.files.length && (resizeToggle.checked || qualityToggle.checked));
-                        
-                        if (!compressBtn.disabled) compressBtn.classList.remove('opacity-50','cursor-not-allowed');
-
-                        const img = new Image();
-                        const objectURL = URL.createObjectURL(e.target.files[0]);
-
-                        img.onload = function () {
-                            if (!keepAspect.checked || !keepAspectRatio.checked) {
-                                width = img.naturalWidth;
-                                height = img.naturalHeight;
-                            } else {
-                                width.value = img.naturalWidth;
-                                height.value = img.naturalHeight;
-                            };
-
-                            aspectRatio = img.naturalWidth / img.naturalHeight;
-                            
-                            updateHeight();
-
-                            URL.revokeObjectURL(objectURL);
-                        };
-
-                        img.src = objectURL;
-                    });
-
-                    compressionSlider.addEventListener('input', e => sliderValue.textContent = `${e.target.value}%`);
-
-                    function updateMode() {
-                        if (sliderMode.checked) {
-                            qualityBlock.classList.remove('hidden');
-                            targetBlock.classList.add('hidden');
-                        } else {
-                            qualityBlock.classList.add('hidden');
-                            targetBlock.classList.remove('hidden');
-                        };
-                    };
-
-                    sliderMode.addEventListener('change', updateMode);
-                    sizeMode.addEventListener('change', updateMode);
-
-                    updateMode();
-
-                    function toggleCover(wrapper, toggle) {
-                        if (toggle.checked) {
-                            wrapper.classList.add('relative');
-
-                            const cover = wrapper.querySelector('.cover');
-                            cover.classList.add('hidden');
-                        } else {
-                            wrapper.classList.add('relative');
-
-                            const cover = wrapper.querySelector('.cover');
-                            cover.classList.remove('hidden');
-                        };
-                    }
-
-                    qualityToggle.addEventListener('change', () => {
-                        toggleCover(qualityWrapper, qualityToggle);
-
-                        if (resizeToggle.checked) {
-                            resizeToggle.checked = false;
-                            toggleCover(resizeWrapper, resizeToggle);
-                        };
-
-                        if (!qualityToggle.checked && !resizeToggle.checked) return buttonDisable();
-
-                        if (hasUploaded) buttonEnable();
-                    });
-
-                    resizeToggle.addEventListener('change', () => {
-                        toggleCover(resizeWrapper, resizeToggle);
-
-                        if (resizeToggle.checked) {
-                            widthInput.value = width;
-                            heightInput.value = height;
-                        } else {
-                            widthInput.value = 0;
-                            heightInput.value = 0;
-                        };
-
-                        if (qualityToggle.checked) {
-                            qualityToggle.checked = false;
-                            toggleCover(qualityWrapper, qualityToggle);
-                        };
-
-                        if (!qualityToggle.checked && !resizeToggle.checked) return buttonDisable();
-                    
-                        if (hasUploaded) buttonEnable();
-                    });
-
-                    toggleCover(qualityWrapper, qualityToggle);
-                    toggleCover(resizeWrapper, resizeToggle);
-                                                
-                    heightInput.disabled = keepAspect.checked;
-                    updateHeight();
-                });
-                """
+                script [_src "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.5"] []
             ]
             body [ _class "bg-gray-100 min-h-screen flex items-center justify-center p-4" ] [
                 div [] [
@@ -354,6 +164,8 @@ module Views =
                         _disabled
                     ]
                 ]
+                
+                script [_src "/assets/js/main.js"] []
             ]
         ]
 
@@ -362,9 +174,8 @@ module Views =
             head [] [
                 title [] [ str "IC | Results" ]
                 link [ _rel "icon"; _type "image/x-icon"; _href "/favicon.ico" ]
-                script [
-                    _src "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.5"
-                ] []
+                script [ _src "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.5" ] []
+                script [ _src "/assets/js/result.js" ] []
                 style [] [
                     rawText """
                     body {
@@ -461,66 +272,6 @@ module Views =
                     .download-btn a:hover {
                         background: #0056b3;
                     }
-                    """
-                ]
-                script [] [
-                    rawText """
-                    document.addEventListener('DOMContentLoaded', () => {
-                        const container = document.querySelector('.slider-container');
-                        const handle = document.querySelector('.slider-handle');
-                        const overlay = document.querySelector('.after');
-                        const modal = document.getElementById('metadataModal');
-                        const modalContent = document.getElementById('modalContent');
-                        const closeModal = document.getElementById('closeModal');
-
-                        let isDragging = false;
-
-                        function updateSlider(x) {
-                            const rectangle = container.getBoundingClientRect();
-                            let offset = x - rectangle.left;
-                            offset = Math.max(0, Math.min(offset, rectangle.width));
-
-                            const percent = offset / rectangle.width * 100;
-
-                            overlay.style.clip = `rect(0, ${offset}px, ${rectangle.height}px, 0)`;
-                            handle.style.left = percent + "%";
-                        }
-
-                        updateSlider(window.innerWidth / 2);
-
-                        handle.addEventListener('mousedown', () => isDragging = true);
-                        document.addEventListener('mouseup', () => isDragging = false);
-
-                        document.addEventListener('mousemove', (e) => {
-                            if (isDragging) updateSlider(e.clientX);
-                        });
-
-                        container.addEventListener('click', e => updateSlider(e.clientX));
-
-                        function showMetadata(meta) {
-                            const parsedMeta = JSON.parse(meta);
-
-                            modalContent.innerHTML = `
-                                <p><strong>Format: </strong>${parsedMeta.format ? parsedMeta.format.substring(1) : "Unknown" }</p>
-                                <p><strong>Size: </strong>${(parsedMeta.size / 1024 / 1024).toFixed(3)} KB</p>
-                                <p><strong>Dimensions: </strong>${parsedMeta.width}x${parsedMeta.height}</p>`;
-
-                            modal.classList.remove('hidden');
-                            modal.classList.add('flex');
-                        };
-
-                        document.querySelectorAll('.meta-trigger').forEach(btn => {
-                            btn.addEventListener('click', () => {
-                                const meta = JSON.parse(btn.getAttribute('data-meta'));
-                                showMetadata(meta);
-                            });
-                        });
-
-                        closeModal.addEventListener('click', () => {
-                            modal.classList.add('hidden');
-                            modal.classList.remove('flex');
-                        });
-                    });
                     """
                 ]
             ]

@@ -10,6 +10,9 @@ open Microsoft.Extensions.Hosting
 
 open System.Text.Json
 
+open SixLabors.ImageSharp
+open SixLabors.ImageSharp.PixelFormats
+
 open FileCompressor.Compress
 open FileCompressor.Views
 open FileCompressor.Utility
@@ -44,7 +47,9 @@ let webApp =
                 let widthOpt = parseIntOption "width"
                 let heightOpt = parseIntOption "height"
 
-                printfn "%O %d %d SIZE" mode (widthOpt |> Option.defaultValue 0) (heightOpt |> Option.defaultValue 0)
+                use image = Image.Load(file.OpenReadStream())
+                let beforeWidth = image.Width
+                let beforeHeight = image.Height
 
                 let uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads")
                 Directory.CreateDirectory(uploadsDir) |> ignore
@@ -58,12 +63,10 @@ let webApp =
                 let outputPath = 
                     match widthOpt, heightOpt with
                     | Some w, Some h when w > 0 && h > 0 ->
-                        printfn "resize thingy"
                         resizeImage file w h
                     | _ ->
                     match targetSizeKB with
                     | Some target when target > 0 ->
-                        printfn "testtttttt %d" target
                         compressToTargetSize file target
                     | _ ->
                     match method with
@@ -75,31 +78,28 @@ let webApp =
                 use fs = new FileStream(savedPath, FileMode.Create)
                 file.CopyTo(fs)
 
-                let originalPath = Path.Combine(uploadsDir, fileName)
                 let beforePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", fileName)
                 let afterPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "output", Path.GetFileName(outputPath))
 
-               // let width, height = getImageDimensions beforePath
-               // let width2, height2 = getImageDimensions afterPath
-               // printfn "ASD %O %O %d %d %d %d" xx yy width height width2 height2
+                use imageAfter = Image.Load(afterPath)
+                let afterWidth = imageAfter.Width
+                let afterHeight = imageAfter.Height
 
                 let originalSize: int64 = getFileSize(beforePath)
                 let compressedSize: int64 = getFileSize(afterPath)
                 let beforeExtension = getExtension(beforePath)
                 let afterExtension = getExtension(afterPath)
 
-                printfn "Size: %d %d | Extension: %O %O" originalSize compressedSize beforeExtension afterExtension
-
                 let beforeMeta = { 
-                    width = 1920; 
-                    height = 1080; 
+                    width = beforeWidth; 
+                    height = beforeHeight; 
                     size = originalSize; 
                     format = beforeExtension;
                 }
 
                 let afterMeta = { 
-                    width = 1920; 
-                    height = 1080; 
+                    width = afterWidth; 
+                    height = afterHeight; 
                     size = compressedSize; 
                     format = afterExtension;
                 }
@@ -109,7 +109,7 @@ let webApp =
 
                 return! htmlView (resultView $"/output/{outputPath}" $"/uploads/{fileName}" jsonMetaBefore jsonMetaAfter) next ctx
             }
-        GET >=> routef "/%s" (fun _ -> redirectTo false "/")
+       // GET >=> routef "/%s" (fun _ -> redirectTo false "/")
     ]
 
 let configureApp (app : IApplicationBuilder) =
