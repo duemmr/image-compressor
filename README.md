@@ -17,10 +17,10 @@ This is a simple image compressor web application built in **F#**, using **Giraf
 ### Features preview
 
 ## Home
-https://i.gyazo.com/3b568cfed2f52f547e48436e84ed3dc2.mp4
+https://gyazo.com/3b568cfed2f52f547e48436e84ed3dc2
 
 ## After adjustment
-https://i.gyazo.com/00e24d9fd0ef111f712b69568470b4b9.mp4
+https://gyazo.com/00e24d9fd0ef111f712b69568470b4b9
 
 <img src="https://i.gyazo.com/3b568cfed2f52f547e48436e84ed3dc2.mp4" alt="Main feature" />
 
