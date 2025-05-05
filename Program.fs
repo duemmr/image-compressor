@@ -64,7 +64,7 @@ let webApp =
                 // let compressedSize: int64 = getFileSize(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", Path.GetFileName(outputPath)))
                 //   printfn "%O" (Directory.GetCurrentDirectory())
                 // let gyerunk = Path.Combine(Directory.GetCurrentDirectory(), outputPath)
-                / / printfn "%O | Original path: %O\nCompressed path: %O" mode gyerunk originalPath
+                // printfn "%O | Original path: %O\nCompressed path: %O" mode gyerunk originalPath
                 return! htmlView (resultView outputPath $"/uploads/{fileName}") next ctx
             }
         GET >=> routef "/%s" (fun _ -> redirectTo false "/")
