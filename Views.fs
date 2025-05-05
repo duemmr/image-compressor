@@ -34,14 +34,34 @@ module Views =
                     const qualityToggle     = document.getElementById('enableQuality');
                     const resizeToggle      = document.getElementById('enableResize');
                     const compressionSlider = document.getElementById('compressionSlider');
+                    const keepAspectRatio   = document.getElementById('keepAspect')
+                    const dropZone          = document.getElementById('drop-zone');
+                    const methodSelect      = document.getElementById('methodSelect');
+                    const widthInput        = document.getElementById('width');
+                    const heightInput       = document.getElementById('height');
                     const form              = document.getElementById('form');
 
+                    let width = 0;
+                    let height = 0;
+                    let aspectRatio = 0;
                     let hasUploaded = false;
-
                     compressBtn.disabled = true;
 
-                    const dropZone = document.getElementById('drop-zone');
-                    const methodSelect = document.getElementById('methodSelect');
+                    function updateHeight() {
+                        if (!keepAspect.checked || !keepAspectRatio.checked) return;
+
+                        const width = parseInt(widthInput.value);
+                        if (!isNaN(width)) heightInput.value = Math.round(width / aspectRatio);
+                    };
+
+                    keepAspectRatio.addEventListener('change', () => {
+                        heightInput.disabled = keepAspect.checked;
+                        if (keepAspect.checked) updateHeight();
+                    });
+
+                    widthInput.addEventListener('input', () => {
+                        if (keepAspect.checked) updateHeight();
+                    });
 
                     ['dragenter', 'dragover'].forEach(eventName => {
                         dropZone.addEventListener(eventName, e => {
@@ -67,11 +87,7 @@ module Views =
                         compressBtn.classList.add('opacity-50', 'cursor-not-allowed');
                     };
 
-                    compressBtn.addEventListener('click', () => {
-                    form.submit();
-                    console.info("ghmhmhs")
-                    });
-                    console.info(compressBtn.onclick)
+                    compressBtn.addEventListener('click', () => form.submit());
 
                     dropZone.addEventListener('drop', e => {
                         const files = e.dataTransfer.files;
@@ -97,6 +113,27 @@ module Views =
                         compressBtn.disabled = !(e.target.files.length && (resizeToggle.checked || qualityToggle.checked));
                         
                         if (!compressBtn.disabled) compressBtn.classList.remove('opacity-50','cursor-not-allowed');
+
+                        const img = new Image();
+                        const objectURL = URL.createObjectURL(e.target.files[0]);
+
+                        img.onload = function () {
+                            if (!keepAspect.checked || !keepAspectRatio.checked) {
+                                width = img.naturalWidth;
+                                height = img.naturalHeight;
+                            } else {
+                                width.value = img.naturalWidth;
+                                height.value = img.naturalHeight;
+                            };
+
+                            aspectRatio = img.naturalWidth / img.naturalHeight;
+                            
+                            updateHeight();
+
+                            URL.revokeObjectURL(objectURL);
+                        };
+
+                        img.src = objectURL;
                     });
 
                     compressionSlider.addEventListener('input', e => sliderValue.textContent = `${e.target.value}%`);
@@ -146,6 +183,14 @@ module Views =
                     resizeToggle.addEventListener('change', () => {
                         toggleCover(resizeWrapper, resizeToggle);
 
+                        if (resizeToggle.checked) {
+                            widthInput.value = width;
+                            heightInput.value = height;
+                        } else {
+                            widthInput.value = 0;
+                            heightInput.value = 0;
+                        };
+
                         if (qualityToggle.checked) {
                             qualityToggle.checked = false;
                             toggleCover(qualityWrapper, qualityToggle);
@@ -158,6 +203,9 @@ module Views =
 
                     toggleCover(qualityWrapper, qualityToggle);
                     toggleCover(resizeWrapper, resizeToggle);
+                                                
+                    heightInput.disabled = keepAspect.checked;
+                    updateHeight();
                 });
                 """
             ]
@@ -229,8 +277,8 @@ module Views =
                                     _type "number"; 
                                     _id "targetKb";
                                     _name "targetKb"
-                                    _min "1";
-                                    _value "1";
+                                    _min "0";
+                                    _value "0";
                                     _placeholder "100";
                                     _class "mt-1 block w-full rounded-lg border-2 border-gray-300 py-2 px-3"
                                 ]
@@ -265,22 +313,30 @@ module Views =
                                 div [ _class "flex space-x-4" ] [
                                     div [ _class "w-1/2" ] [
                                         input [
-                                            _type "number"; _name "width"; _placeholder "Width"
-                                            _min "1"; _class "mt-1 block w-full rounded-lg border-2 border-gray-300 py-2 px-3"
+                                            _type "number"; 
+                                            _id "width";
+                                            _name "width"; 
+                                            _placeholder "Width";
+                                            _min "1"; 
+                                            _class "mt-1 block w-full rounded-lg border-2 border-gray-300 py-2 px-3"
                                         ]
                                     ]
 
                                     div [ _class "w-1/2" ] [
                                         input [
-                                            _type "number"; _name "height"; _placeholder "Height"
-                                            _min "1"; _class "mt-1 block w-full rounded-lg border-2 border-gray-300 py-2 px-3"
+                                            _type "number";
+                                            _id "height";
+                                            _name "height";
+                                            _placeholder "Height";
+                                            _min "1";
+                                            _class "mt-1 block w-full rounded-lg border-2 border-gray-300 py-2 px-3"
                                         ]
                                     ]
                                 ]
 
                                 div [ _class "flex items-center space-x-2" ] [
                                     input [ _type "checkbox"; _id "keepAspect"; _name "keepAspect"; _class "form-checkbox" ]
-                                    label [ _for "keepAspect"; _class "text-sm text-gray-700" ] [ str "Keep Aspect Ratio" ]
+                                    label [ _for "keepAspect"; _class "text-sm text-gray-700" ] [ str "Keep aspect ratio" ]
                                 ]
                             ]
 
@@ -301,7 +357,7 @@ module Views =
             ]
         ]
 
-    let resultView (beforeUrl: string) (afterUrl: string) =
+    let resultView (beforeUrl: string) (afterUrl: string) (metaBefore: string) (metaAfter: string) =
         html [] [
             head [] [
                 title [] [ str "IC | Results" ]
@@ -413,6 +469,9 @@ module Views =
                         const container = document.querySelector('.slider-container');
                         const handle = document.querySelector('.slider-handle');
                         const overlay = document.querySelector('.after');
+                        const modal = document.getElementById('metadataModal');
+                        const modalContent = document.getElementById('modalContent');
+                        const closeModal = document.getElementById('closeModal');
 
                         let isDragging = false;
 
@@ -438,19 +497,17 @@ module Views =
 
                         container.addEventListener('click', e => updateSlider(e.clientX));
 
-                        const modal = document.getElementById('metadataModal');
-                        const modalContent = document.getElementById('modalContent');
-                        const closeModal = document.getElementById('closeModal');
-
                         function showMetadata(meta) {
+                            const parsedMeta = JSON.parse(meta);
+
                             modalContent.innerHTML = `
-                                <p><strong>Format:</strong>JPG</p>
-                                <p><strong>Size:</strong>1024 KB</p>
-                                <p><strong>Dimensions:</strong>800x600</p>`;
+                                <p><strong>Format: </strong>${parsedMeta.format ? parsedMeta.format.substring(1) : "Unknown" }</p>
+                                <p><strong>Size: </strong>${(parsedMeta.size / 1024 / 1024).toFixed(3)} KB</p>
+                                <p><strong>Dimensions: </strong>${parsedMeta.width}x${parsedMeta.height}</p>`;
 
                             modal.classList.remove('hidden');
                             modal.classList.add('flex');
-                        }
+                        };
 
                         document.querySelectorAll('.meta-trigger').forEach(btn => {
                             btn.addEventListener('click', () => {
@@ -472,12 +529,12 @@ module Views =
                     h2 [_class "text-center mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-3xl dark:text-white"] [ 
                         button [
                             _class "meta-trigger underline text-blue-600 cursor-pointer hover:text-blue-800"
-                           // attr "data-meta" (System.Text.Json.JsonSerializer.Serialize(beforeMeta))
+                            attr "data-meta" (System.Text.Json.JsonSerializer.Serialize(metaBefore))
                         ] [ str "Before" ]
                         span [] [ str " & "] 
                         button [
                             _class "meta-trigger underline text-blue-600 cursor-pointer hover:text-blue-800"
-                            //attr "data-meta" (System.Text.Json.JsonSerializer.Serialize(afterMeta))
+                            attr "data-meta" (System.Text.Json.JsonSerializer.Serialize(metaAfter))
                         ] [ str "After" ]
                     ]
                     div [ _class "slider-container" ] [

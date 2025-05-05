@@ -20,7 +20,7 @@ module Compress =
 
     let private getOutputPath (original: IFormFile) (ext: string) =
         let fileName = Path.GetFileNameWithoutExtension(original.FileName)
-        let abc = Path.Combine("wwwroot", $"{fileName}_compressed.{ext}")
+        let abc = Path.Combine("wwwroot", "output", $"output_{fileName}.{ext}")
         printfn "%O" abc
         abc
 
@@ -59,7 +59,7 @@ module Compress =
         Path.GetFileName(outputPath)
 
     let saveImage (img: Image) (encoder: IImageEncoder) (originalFilename: string) : string =
-        let dir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "compressed")
+        let dir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "output")
         Directory.CreateDirectory(dir) |> ignore
 
         let nameWithoutExt = Path.GetFileNameWithoutExtension originalFilename
@@ -68,13 +68,13 @@ module Compress =
             | :? JpegEncoder -> ".jpg"
             | _ -> Path.GetExtension originalFilename
 
-        let outputName = sprintf "%s_compressed%s" nameWithoutExt ext
+        let outputName = sprintf "output_%s%s" nameWithoutExt ext
         let outputPath = Path.Combine(dir, outputName)
 
         use fs = new FileStream(outputPath, FileMode.Create)
         img.Save(fs, encoder)
         
-        outputPath
+        Path.GetFileName(outputPath)
 
     let rec findQuality (img:Image) targetSizeKB lo hi =
         let q = (lo + hi) / 2
@@ -88,7 +88,7 @@ module Compress =
         elif sizeKB > int64 targetSizeKB then findQuality img targetSizeKB lo q
         else findQuality img targetSizeKB q hi
 
-    let compressToTargetSize file targetKB =
+    let compressToTargetSize (file: IFormFile) (targetKB: int) =
         let img = loadImageFromFormFile file
         let q = findQuality img targetKB 10 100
         let encoder = JpegEncoder(Quality=q)
@@ -96,9 +96,9 @@ module Compress =
         saveImage img encoder file.FileName
 
     let resizeImage (inputFile: IFormFile) (width: int) (height: int) : string =
-        let uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads")
+        let uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "output")
         let fileName = Path.GetFileName inputFile.FileName
-        let resizedPath = Path.Combine(uploadsDir, $"resized_{fileName}")
+        let resizedPath = Path.Combine(uploadsDir, $"output_{fileName}")
 
         use inputStream = inputFile.OpenReadStream()
         use image = Image.Load inputStream
@@ -108,4 +108,4 @@ module Compress =
         use outputStream = new FileStream(resizedPath, FileMode.Create)
         image.SaveAsJpeg(outputStream)
 
-        resizedPath
+        Path.GetFileName(resizedPath)
