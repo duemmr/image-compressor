@@ -30,7 +30,6 @@ https://github.com/user-attachments/assets/1619f6b5-d0ea-4303-a4be-4365feba6b91
 ### Prerequisites
 
 - **.NET SDK** 6.0 or later
-- **F#**
 - **NuGet** packages
   - Giraffe
   - System.Drawing.Common
